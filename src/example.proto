@@ -1,0 +1,33 @@
+syntax = "proto3";
+package resourceserver;
+
+option java_package = "com.example.resources";
+
+service ResourceServer {
+  rpc ListResources(ListResourcesRequest)
+    returns (ListResourcesResponse) {
+  }
+  rpc GetResource(GetResourceRequest)
+    returns (GetResourceResponse) {
+  }
+}
+
+message Resource {
+  string name = 1;
+}
+
+message GetResourceRequest {
+  string name = 1;
+}
+
+message GetResourceResponse {
+  Resource resource = 1;
+}
+
+message ListResourcesRequest {
+  string name = 1;
+}
+
+message ListResourcesResponse {
+  repeated Resource resource = 1;
+}

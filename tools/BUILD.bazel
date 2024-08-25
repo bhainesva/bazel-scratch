@@ -1,0 +1,5 @@
+sh_binary(
+    name = "rewrite_imports",
+    srcs = ["rewrite_imports.sh"],
+    visibility = ["//visibility:public"],
+)
