@@ -1,8 +1,7 @@
-load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_library")
-load("@aspect_rules_ts//ts:proto.bzl", "ts_proto_library")
+load("@aspect_rules_js//js:defs.bzl", "js_binary")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
 load("@aspect_rules_esbuild//esbuild:defs.bzl", "esbuild")
-load("@rules_proto//proto:defs.bzl", "proto_library")
+
 
 # This file creates a JS executable that imports generated proto code.
 # The "Happy Path" is how you would normally do this.
@@ -16,21 +15,6 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 # Sad - bazel run //src:rewritten_bin
 
 # -----------------------------------
-# Common
-# -----------------------------------
-proto_library(
-    name = "proto",
-    srcs = ["example.proto"],
-)
-
-ts_proto_library(
-    name = "connect",
-    copy_files = False,
-    node_modules = "//:node_modules",
-    proto = ":proto",
-)
-
-# -----------------------------------
 # Happy Path
 # -----------------------------------
 ts_project(
@@ -40,7 +24,7 @@ ts_project(
     declaration = True,
     tsconfig = "//:tsconfig",
     deps = [
-        ":connect",
+        "//protos:connect",
         "//:node_modules/@bufbuild/protobuf"
     ]
 )
@@ -60,35 +44,15 @@ js_binary(
 # -----------------------------------
 # Sad Path
 # -----------------------------------
-genrule(
-    name = "rewritten_connect",
-    # In real usage these would be calculated in a macro. 
-    # Although the srcs passed in are actually js files, these have to be .ts files
-    # otherwise we'll get conflicting output errors when they're passed to the
-    # js_library/ts_project. But this causes a second issues which is that, since they're not really ts,
-    # the generated rewritten .d.ts files aren't right. I don't know how to handle that. 
-    outs = ["rewritten_example_connect.ts", "rewritten_example_pb.ts"],
-    srcs = [":connect"],
-    cmd = "./$(location //tools:rewrite_imports) \"$(RULEDIR)\" \"$(SRCS)\"",
-    tools = ["//tools:rewrite_imports"],
-)
-
-js_library(
-    name = "rewritten_jsinfo",
-    declarations = [":rewritten_connect"],
-    deps = [
-        "//:node_modules/@bufbuild/protobuf"
-    ],
-)
-
 ts_project(
     name = "rewritten_ts",
     srcs = ["rewritten_in.ts"],
     allow_js = True,
     declaration = True,
     tsconfig = "//:tsconfig",
+    out_dir = "out",
     deps = [
-        ":rewritten_jsinfo",
+        "//src/js-proto:rewritten_jsinfo",
         "//:node_modules/@bufbuild/protobuf"
     ],
 )

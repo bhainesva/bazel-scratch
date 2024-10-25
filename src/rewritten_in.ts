@@ -1,3 +1,3 @@
-import { ResourceServer } from "@gen/src/rewritten_example_connect.js";
+import { ResourceServer } from "@gen/src/js-proto/example_connect.js";
 
 console.log("hello world", ResourceServer);
